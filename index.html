@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<meta name='viewport' content='width=device-width, initial-scale=1'/><!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -145,6 +145,29 @@
         .chart-container {
             height: 200px;
             margin-bottom: 10px;
+            position: relative;
+        }
+
+        .chart-tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .chart-tab {
+            padding: 5px 15px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            color: #546e7a;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .chart-tab.active {
+            color: #01579b;
+            border-bottom-color: #01579b;
+            font-weight: 600;
         }
 
         .entry-form {
@@ -706,6 +729,33 @@
             grid-column: 1 / -1;
         }
 
+        .chart-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .chart-controls select {
+            padding: 5px;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            font-size: 0.7rem;
+        }
+
+        .chart-controls button {
+            padding: 5px 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            background: white;
+            font-size: 0.7rem;
+            cursor: pointer;
+        }
+
+        .chart-controls button:hover {
+            background: #f5f5f5;
+        }
+
         @media print {
             body {
                 background: white;
@@ -733,7 +783,7 @@
         <!-- App Header -->
         <div class="app-header">
             <h1>PM-POSHAN Mid-Day Meal</h1>
-            <p>Government of India</p>
+            <p>Samghra Shiksha</p>
         </div>
 
         <!-- Navigation Tabs -->
@@ -792,8 +842,24 @@
                     </div>
                 </div>
 
+                <div class="chart-tabs">
+                    <div class="chart-tab active" data-chart="attendance">Attendance</div>
+                    <div class="chart-tab" data-chart="expenditure">Expenditure</div>
+                    <div class="chart-tab" data-chart="rice">Rice</div>
+                    <div class="chart-tab" data-chart="meals">Meals</div>
+                </div>
+
                 <div class="chart-container">
-                    <canvas id="attendanceChart"></canvas>
+                    <canvas id="dashboardChart"></canvas>
+                </div>
+
+                <div class="chart-controls">
+                    <select id="chart-month">
+                        <option value="">-- Select Month --</option>
+                    </select>
+                    <button id="refresh-chart">
+                        <i class="bi bi-arrow-clockwise"></i> Refresh
+                    </button>
                 </div>
 
                 <div class="entry-form">
@@ -1056,7 +1122,7 @@
                 <div class="form-group">
                     <label for="export-month">Select Month</label>
                     <select id="export-month" class="form-control">
-                        <option value="">-- Select Month --</option>
+             <option value="">-- Select Month --</option>
                     </select>
                 </div>
                 
@@ -1087,6 +1153,9 @@
                 </div>
                 <div class="sub-nav-tab" data-sub-tab="fund-details">
                     <span>Fund Details</span>
+                </div>
+                <div class="sub-nav-tab" data-sub-tab="helper-details">
+                    <span>Helper Details</span>
                 </div>
                 <div class="sub-nav-tab" data-sub-tab="health-details">
                     <span>Health Details</span>
@@ -1374,6 +1443,110 @@
                 </div>
             </div>
 
+            <!-- Helper Details Sub Tab -->
+            <div class="sub-tab-content" id="helper-details">
+                <div class="dashboard-card">
+                    <h3 class="mb-3">Cook Cum Helper Details</h3>
+                    
+                    <div class="settings-section">
+                        <h3>Add New Helper</h3>
+                        <div class="settings-grid">
+                            <div class="form-group">
+                                <label for="helper-name">Name</label>
+                                <input type="text" id="helper-name" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="helper-gender">Gender</label>
+                                <select id="helper-gender" class="form-control">
+                                    <option value="male">Male</option>
+                                    <option value="female">Female</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="helper-category">Category</label>
+                                <select id="helper-category" class="form-control">
+                                    <option value="gen">GEN</option>
+                                    <option value="obc">OBC</option>
+                                    <option value="sc">SC</option>
+                                    <option value="st">ST</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="helper-payment-mode">Payment Mode</label>
+                                <select id="helper-payment-mode" class="form-control">
+                                    <option value="bank">Bank</option>
+                                    <option value="cash">Cash</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="helper-amount">Amount (₹)</label>
+                                <input type="number" id="helper-amount" min="0" step="0.01" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="helper-aadhaar">Aadhaar Number</label>
+                                <input type="text" id="helper-aadhaar" class="form-control" maxlength="12" pattern="[0-9]{12}">
+                            </div>
+                        </div>
+                        <button class="btn-primary-custom" id="helper-add-btn">
+                            <i class="bi bi-plus-circle"></i> Add Helper
+                        </button>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3>Existing Helpers</h3>
+                        <div class="helper-table-container">
+                            <table class="helper-table" id="helper-table">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Gender</th>
+                                        <th>Category</th>
+                                        <th>Payment Mode</th>
+                                        <th>Amount (₹)</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="6" class="text-center">No helpers added yet</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3>Helper Payment Entry</h3>
+                        <div class="settings-grid">
+                            <div class="form-group">
+                                <label for="helper-payment-month">Month</label>
+                                <select id="helper-payment-month" class="form-control">
+                                    <option value="">-- Select Month --</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="helper-payment-helper">Helper</label>
+                                <select id="helper-payment-helper" class="form-control">
+                                    <option value="">-- Select Helper --</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="helper-payment-amount">Amount (₹)</label>
+                                <input type="number" id="helper-payment-amount" min="0" step="0.01" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="helper-payment-date">Date</label>
+                                <input type="date" id="helper-payment-date" class="form-control">
+                            </div>
+                        </div>
+                        <button class="btn-primary-custom" id="helper-payment-save-btn">
+                            <i class="bi bi-save"></i> Save Payment
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <!-- Health Details Sub Tab -->
             <div class="sub-tab-content" id="health-details">
                 <div class="dashboard-card">
@@ -1383,7 +1556,9 @@
                         <h3>IFA Tablet Beneficiaries</h3>
                         <div class="settings-grid">
                             <div class="form-group">
-                                <label for="health-ifa-boys">Boys</label>
+                                <label for="health-ifa-boys
+                                
+                                                                <label for="health-ifa-boys">Boys</label>
                                 <input type="number" id="health-ifa-boys" min="0" class="form-control">
                             </div>
                             <div class="form-group">
@@ -1571,7 +1746,7 @@
 
         <!-- App Footer -->
         <div class="app-footer">
-            Developed by Imran Gani | Teacher Zone Vailoo
+            Developed by Imran Gani | Teacher Zone Vailoo | 9149690096
         </div>
     </div>
 
@@ -1620,6 +1795,12 @@
             dashboardPrimary: document.getElementById('dashboard-primary'),
             dashboardMiddle: document.getElementById('dashboard-middle'),
             dashboardSaveBtn: document.getElementById('dashboard-save-btn'),
+            
+            // Dashboard Charts
+            chartTabs: document.querySelectorAll('.chart-tab'),
+            chartMonth: document.getElementById('chart-month'),
+            refreshChartBtn: document.getElementById('refresh-chart'),
+            dashboardChart: document.getElementById('dashboardChart'),
             
             // Summary
             summaryMonth: document.getElementById('summary-month'),
@@ -1743,6 +1924,21 @@
             fundTotalClosing: document.getElementById('fund-total-closing'),
             fundCalculateBtn: document.getElementById('fund-calculate-btn'),
             
+            // Settings - Helper Details
+            helperName: document.getElementById('helper-name'),
+            helperGender: document.getElementById('helper-gender'),
+            helperCategory: document.getElementById('helper-category'),
+            helperPaymentMode: document.getElementById('helper-payment-mode'),
+            helperAmount: document.getElementById('helper-amount'),
+            helperAadhaar: document.getElementById('helper-aadhaar'),
+            helperAddBtn: document.getElementById('helper-add-btn'),
+            helperTable: document.getElementById('helper-table'),
+            helperPaymentMonth: document.getElementById('helper-payment-month'),
+            helperPaymentHelper: document.getElementById('helper-payment-helper'),
+            helperPaymentAmount: document.getElementById('helper-payment-amount'),
+            helperPaymentDate: document.getElementById('helper-payment-date'),
+            helperPaymentSaveBtn: document.getElementById('helper-payment-save-btn'),
+            
             // Settings - Health Details
             healthIfaBoys: document.getElementById('health-ifa-boys'),
             healthIfaGirls: document.getElementById('health-ifa-girls'),
@@ -1793,9 +1989,11 @@
             entries: [],
             riceEntries: [],
             cashEntries: [],
+            helpers: [],
+            helperPayments: [],
             settings: {
-                schoolName: 'Middle School Senzi',
-                udise: '01061600204',
+                schoolName: 'School Name',
+                udise: '00000000000',
                 onRoll: {
                     balvatika: 0,
                     primary: 0,
@@ -1852,7 +2050,8 @@
                 }
             },
             currentMonth: new Date().getMonth(),
-            currentYear: new Date().getFullYear()
+            currentYear: new Date().getFullYear(),
+            activeChart: 'attendance'
         };
 
         // Initialize App
@@ -1864,6 +2063,7 @@
             const today = new Date();
             UI.summaryRiceDate.value = formatDate(today);
             UI.summaryCashDate.value = formatDate(today);
+            UI.helperPaymentDate.value = formatDate(today);
             
             // Update dashboard date
             UI.dashboardDate.textContent = formatDate(today, true);
@@ -1874,14 +2074,14 @@
             // Set up event listeners
             setupEventListeners();
             
-            // Update UI with settings
-            updateUIWithSettings();
-            
             // Update dashboard
             updateDashboard();
             
             // Create attendance chart
-            createAttendanceChart();
+            createChart('attendance');
+            
+            // Update UI with settings
+            updateUIWithSettings();
         }
 
         // Format date for input fields
@@ -1902,6 +2102,8 @@
             const savedEntries = localStorage.getItem('poshanEntries');
             const savedRiceEntries = localStorage.getItem('poshanRiceEntries');
             const savedCashEntries = localStorage.getItem('poshanCashEntries');
+            const savedHelpers = localStorage.getItem('poshanHelpers');
+            const savedHelperPayments = localStorage.getItem('poshanHelperPayments');
             const savedSettings = localStorage.getItem('poshanSettings');
             
             if (savedEntries) {
@@ -1914,6 +2116,14 @@
             
             if (savedCashEntries) {
                 state.cashEntries = JSON.parse(savedCashEntries);
+            }
+            
+            if (savedHelpers) {
+                state.helpers = JSON.parse(savedHelpers);
+            }
+            
+            if (savedHelperPayments) {
+                state.helperPayments = JSON.parse(savedHelperPayments);
             }
             
             if (savedSettings) {
@@ -1952,6 +2162,8 @@
             localStorage.setItem('poshanEntries', JSON.stringify(state.entries));
             localStorage.setItem('poshanRiceEntries', JSON.stringify(state.riceEntries));
             localStorage.setItem('poshanCashEntries', JSON.stringify(state.cashEntries));
+            localStorage.setItem('poshanHelpers', JSON.stringify(state.helpers));
+            localStorage.setItem('poshanHelperPayments', JSON.stringify(state.helperPayments));
             localStorage.setItem('poshanSettings', JSON.stringify(state.settings));
         }
 
@@ -1978,12 +2190,16 @@
                     const option3 = new Option(text, value);
                     const option4 = new Option(text, value);
                     const option5 = new Option(text, value);
+                    const option6 = new Option(text, value);
+                    const option7 = new Option(text, value);
                     
                     UI.summaryMonth.add(option1);
                     UI.abstractsMonth.add(option2);
                     UI.mealsMonth.add(option3);
                     UI.fundMonth.add(option4);
                     UI.exportMonth.add(option5);
+                    UI.chartMonth.add(option6);
+                    UI.helperPaymentMonth.add(option7);
                     
                     // Set current month as default
                     if (year === currentYear && i === currentMonth) {
@@ -1992,6 +2208,8 @@
                         UI.mealsMonth.value = value;
                         UI.fundMonth.value = value;
                         UI.exportMonth.value = value;
+                        UI.chartMonth.value = value;
+                        UI.helperPaymentMonth.value = value;
                     }
                 }
             }
@@ -2030,6 +2248,25 @@
             UI.summaryCashPrimary.addEventListener('input', updateSummaryCashCalculations);
             UI.summaryCashMiddle.addEventListener('input', updateSummaryCashCalculations);
             
+            // Chart tabs
+            UI.chartTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const chartType = tab.getAttribute('data-chart');
+                    state.activeChart = chartType;
+                    updateChartTabs();
+                    createChart(chartType);
+                });
+            });
+            
+            // Chart controls
+            UI.refreshChartBtn.addEventListener('click', () => {
+                createChart(state.activeChart);
+            });
+            
+            UI.chartMonth.addEventListener('change', () => {
+                createChart(state.activeChart);
+            });
+            
             // Save buttons
             UI.dashboardSaveBtn.addEventListener('click', saveDashboardEntry);
             UI.summaryRiceSaveBtn.addEventListener('click', saveSummaryRiceEntry);
@@ -2056,6 +2293,10 @@
             
             // Fund Details
             UI.fundCalculateBtn.addEventListener('click', calculateFundDetails);
+            
+            // Helper Details
+            UI.helperAddBtn.addEventListener('click', addHelper);
+            UI.helperPaymentSaveBtn.addEventListener('click', saveHelperPayment);
             
             // Data management
             UI.settingsBackupBtn.addEventListener('click', backupData);
@@ -2716,6 +2957,191 @@
             showToast('Fund details calculated successfully', 'success');
         }
 
+        // Add helper
+        function addHelper() {
+            const name = UI.helperName.value.trim();
+            const gender = UI.helperGender.value;
+            const category = UI.helperCategory.value;
+            const paymentMode = UI.helperPaymentMode.value;
+            const amount = parseFloat(UI.helperAmount.value) || 0;
+            const aadhaar = UI.helperAadhaar.value.trim();
+            
+            if (!name) {
+                showToast('Please enter helper name', 'warning');
+                return;
+            }
+            
+            if (aadhaar && (aadhaar.length !== 12 || !/^\d+$/.test(aadhaar))) {
+                showToast('Aadhaar number must be 12 digits', 'warning');
+                return;
+            }
+            
+            const helper = {
+                id: Date.now(),
+                name,
+                gender,
+                category,
+                paymentMode,
+                amount,
+                aadhaar
+            };
+            
+            // Add helper to state
+            state.helpers.push(helper);
+            
+            // Save to localStorage
+            saveData();
+            
+            // Update helper table
+            updateHelperTable();
+            
+            // Update helper payment dropdown
+            updateHelperPaymentDropdown();
+            
+            // Reset form
+            UI.helperName.value = '';
+            UI.helperGender.value = 'male';
+            UI.helperCategory.value = 'gen';
+            UI.helperPaymentMode.value = 'bank';
+            UI.helperAmount.value = '';
+            UI.helperAadhaar.value = '';
+            
+            showToast('Helper added successfully', 'success');
+        }
+
+        // Update helper table
+        function updateHelperTable() {
+            const tbody = UI.helperTable.querySelector('tbody');
+            
+            // Clear table
+            tbody.innerHTML = '';
+            
+            if (state.helpers.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center">No helpers added yet</td></tr>';
+                return;
+            }
+            
+            // Add rows for each helper
+            state.helpers.forEach(helper => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${helper.name}</td>
+                    <td>${helper.gender.charAt(0).toUpperCase() + helper.gender.slice(1)}</td>
+                    <td>${helper.category.toUpperCase()}</td>
+                    <td>${helper.paymentMode.charAt(0).toUpperCase() + helper.paymentMode.slice(1)}</td>
+                    <td>₹${helper.amount.toFixed(2)}</td>
+                    <td><button class="remove-helper-btn" data-id="${helper.id}">Remove</button></td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            // Add event listeners to remove buttons
+            document.querySelectorAll('.remove-helper-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const helperId = parseInt(this.getAttribute('data-id'));
+                    removeHelper(helperId);
+                });
+            });
+        }
+
+        // Update helper payment dropdown
+        function updateHelperPaymentDropdown() {
+            // Clear existing options except the first one
+            while (UI.helperPaymentHelper.options.length > 1) {
+                UI.helperPaymentHelper.remove(1);
+            }
+            
+            // Add helper options
+            state.helpers.forEach(helper => {
+                const option = new Option(helper.name, helper.id);
+                UI.helperPaymentHelper.add(option);
+            });
+        }
+
+        // Remove helper
+        function removeHelper(helperId) {
+            // Show confirmation modal
+            UI.confirmationModalTitle.textContent = 'Remove Helper';
+            UI.confirmationModalBody.textContent = 'Are you sure you want to remove this helper?';
+            
+            UI.confirmationModalConfirm.onclick = () => {
+                // Remove helper from state
+                state.helpers = state.helpers.filter(helper => helper.id !== helperId);
+                
+                // Save to localStorage
+                saveData();
+                
+                // Update helper table
+                updateHelperTable();
+                
+                // Update helper payment dropdown
+                updateHelperPaymentDropdown();
+                
+                // Show success message
+                showToast('Helper removed successfully', 'success');
+                
+                UI.confirmationModal.hide();
+            };
+            
+            UI.confirmationModal.show();
+        }
+
+        // Save helper payment
+        function saveHelperPayment() {
+            const monthYear = UI.helperPaymentMonth.value;
+            const helperId = parseInt(UI.helperPaymentHelper.value);
+            const amount = parseFloat(UI.helperPaymentAmount.value) || 0;
+            const date = UI.helperPaymentDate.value;
+            
+            if (!monthYear) {
+                showToast('Please select a month', 'warning');
+                return;
+            }
+            
+            if (!helperId) {
+                showToast('Please select a helper', 'warning');
+                return;
+            }
+            
+            if (!date) {
+                showToast('Please select a date', 'warning');
+                return;
+            }
+            
+            if (amount <= 0) {
+                showToast('Please enter a valid amount', 'warning');
+                return;
+            }
+            
+            // Get helper details
+            const helper = state.helpers.find(h => h.id === helperId);
+            if (!helper) {
+                showToast('Helper not found', 'error');
+                return;
+            }
+            
+            // Create payment record
+            const payment = {
+                id: Date.now(),
+                helperId,
+                helperName: helper.name,
+                monthYear,
+                amount,
+                date
+            };
+            
+            // Add payment to state
+            state.helperPayments.push(payment);
+            
+            // Save to localStorage
+            saveData();
+            
+            // Reset form
+            UI.helperPaymentAmount.value = '';
+            
+            showToast('Payment saved successfully', 'success');
+        }
+
         // Save all settings
         function saveAllSettings() {
             // Save all settings
@@ -2775,6 +3201,10 @@
             UI.settingsFuelBalvatika.value = state.settings.rates.fuel.balvatika;
             UI.settingsFuelPrimary.value = state.settings.rates.fuel.primary;
             UI.settingsFuelMiddle.value = state.settings.rates.fuel.middle;
+            
+            // Update helper table and dropdown
+            updateHelperTable();
+            updateHelperPaymentDropdown();
         }
 
         // Update dashboard
@@ -2795,18 +3225,39 @@
                 UI.dashboardStudents.textContent = '0';
             }
             
-            // Update attendance chart
-            updateAttendanceChart();
+            // Update chart
+            createChart(state.activeChart);
         }
 
-        // Create attendance chart
-        function createAttendanceChart() {
-            const ctx = document.getElementById('attendanceChart').getContext('2d');
+        // Update chart tabs
+        function updateChartTabs() {
+            UI.chartTabs.forEach(tab => {
+                if (tab.getAttribute('data-chart') === state.activeChart) {
+                    tab.classList.add('active');
+                } else {
+                    tab.classList.remove('active');
+                }
+            });
+        }
+
+        // Create chart
+        function createChart(type) {
+            const ctx = UI.dashboardChart.getContext('2d');
             
-            // Get current month and year
-            const now = new Date();
-            const year = now.getFullYear();
-            const month = now.getMonth();
+            // Destroy existing chart if it exists
+            if (window.dashboardChartInstance) {
+                window.dashboardChartInstance.destroy();
+            }
+            
+            // Get selected month and year
+            let year = state.currentYear;
+            let month = state.currentMonth;
+            
+            if (UI.chartMonth.value) {
+                const [selectedYear, selectedMonth] = UI.chartMonth.value.split('-').map(Number);
+                year = selectedYear;
+                month = selectedMonth - 1;
+            }
             
             // Get number of days in month
             const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -2817,17 +3268,43 @@
                 labels.push(i.toString());
             }
             
+            let chartConfig = {};
+            
+            switch (type) {
+                case 'attendance':
+                    chartConfig = createAttendanceChartConfig(labels, year, month);
+                    break;
+                case 'expenditure':
+                    chartConfig = createExpenditureChartConfig(labels, year, month);
+                    break;
+                case 'rice':
+                    chartConfig = createRiceChartConfig(labels, year, month);
+                    break;
+                case 'meals':
+                    chartConfig = createMealsChartConfig(labels, year, month);
+                    break;
+            }
+            
+            // Create chart
+            window.dashboardChartInstance = new Chart(ctx, chartConfig);
+            
+            // Highlight Sundays
+            highlightSundays();
+        }
+
+        // Create attendance chart config
+        function createAttendanceChartConfig(labels, year, month) {
             // Initialize data arrays
-            const balvatikaData = new Array(daysInMonth).fill(0);
-            const primaryData = new Array(daysInMonth).fill(0);
-            const middleData = new Array(daysInMonth).fill(0);
+            const balvatikaData = new Array(labels.length).fill(0);
+            const primaryData = new Array(labels.length).fill(0);
+            const middleData = new Array(labels.length).fill(0);
             
             // Fill data arrays with entries
             state.entries.forEach(entry => {
                 const entryDate = new Date(entry.date);
                 if (entryDate.getFullYear() === year && entryDate.getMonth() === month) {
                     const day = entryDate.getDate() - 1; // Array is 0-indexed
-                    if (day >= 0 && day < daysInMonth) {
+                    if (day >= 0 && day < labels.length) {
                         balvatikaData[day] = entry.balvatika;
                         primaryData[day] = entry.primary;
                         middleData[day] = entry.middle;
@@ -2835,8 +3312,7 @@
                 }
             });
             
-            // Create chart
-            window.attendanceChart = new Chart(ctx, {
+            return {
                 type: 'bar',
                 data: {
                     labels: labels,
@@ -2909,65 +3385,293 @@
                         }
                     }
                 }
-            });
-            
-            // Highlight Sundays
-            highlightSundays();
+            };
         }
 
-        // Update attendance chart
-        function updateAttendanceChart() {
-            if (!window.attendanceChart) {
-                createAttendanceChart();
-                return;
-            }
-            
-            // Get current month and year
-            const now = new Date();
-            const year = now.getFullYear();
-            const month = now.getMonth();
-            
-            // Get number of days in month
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-            
+        // Create expenditure chart config
+        function createExpenditureChartConfig(labels, year, month) {
             // Initialize data arrays
-            const balvatikaData = new Array(daysInMonth).fill(0);
-            const primaryData = new Array(daysInMonth).fill(0);
-            const middleData = new Array(daysInMonth).fill(0);
+            const expenditureData = new Array(labels.length).fill(0);
             
             // Fill data arrays with entries
             state.entries.forEach(entry => {
                 const entryDate = new Date(entry.date);
                 if (entryDate.getFullYear() === year && entryDate.getMonth() === month) {
                     const day = entryDate.getDate() - 1; // Array is 0-indexed
-                    if (day >= 0 && day < daysInMonth) {
-                        balvatikaData[day] = entry.balvatika;
-                        primaryData[day] = entry.primary;
-                        middleData[day] = entry.middle;
+                    if (day >= 0 && day < labels.length) {
+                        expenditureData[day] = entry.total;
                     }
                 }
             });
             
-            // Update chart data
-            window.attendanceChart.data.datasets[0].data = balvatikaData;
-            window.attendanceChart.data.datasets[1].data = primaryData;
-            window.attendanceChart.data.datasets[2].data = middleData;
+            return {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Daily Expenditure (₹)',
+                        data: expenditureData,
+                        backgroundColor: 'rgba(1, 87, 155, 0.2)',
+                        borderColor: 'rgba(1, 87, 155, 1)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return '₹' + value;
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                boxWidth: 12,
+                                font: {
+                                    size: 10
+                                }
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                title: function(context) {
+                                    const day = context[0].label;
+                                    const date = new Date(year, month, day);
+                                    const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+                                    return `${dayName}, ${formatDate(date, true)}`;
+                                },
+                                label: function(context) {
+                                    return `Expenditure: ₹${context.parsed.y.toFixed(2)}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+        }
+
+        // Create rice chart config
+        function createRiceChartConfig(labels, year, month) {
+            // Initialize data arrays
+            const riceData = new Array(labels.length).fill(0);
             
-            // Update chart
-            window.attendanceChart.update();
+            // Fill data arrays with entries
+            state.entries.forEach(entry => {
+                const entryDate = new Date(entry.date);
+                if (entryDate.getFullYear() === year && entryDate.getMonth() === month) {
+                    const day = entryDate.getDate() - 1; // Array is 0-indexed
+                    if (day >= 0 && day < labels.length) {
+                        riceData[day] = entry.rice;
+                    }
+                }
+            });
             
-            // Highlight Sundays
-            highlightSundays();
+            return {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Rice Consumption (kg)',
+                        data: riceData,
+                        backgroundColor: 'rgba(76, 175, 80, 0.7)',
+                        borderColor: 'rgba(76, 175, 80, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value + ' kg';
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                boxWidth: 12,
+                                font: {
+                                    size: 10
+                                }
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                title: function(context) {
+                                    const day = context[0].label;
+                                    const date = new Date(year, month, day);
+                                    const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+                                    return `${dayName}, ${formatDate(date, true)}`;
+                                },
+                                label: function(context) {
+                                    return `Rice: ${context.parsed.y.toFixed(2)} kg`;
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+        }
+
+        // Create meals chart config
+        function createMealsChartConfig(labels, year, month) {
+            // Initialize data arrays
+            const balvatikaData = new Array(labels.length).fill(0);
+            const primaryData = new Array(labels.length).fill(0);
+            const middleData = new Array(labels.length).fill(0);
+            const totalData = new Array(labels.length).fill(0);
+            
+            // Fill data arrays with entries
+state.entries.forEach(entry => {
+    const entryDate = new Date(entry.date);
+    if (entryDate.getFullYear() === year && entryDate.getMonth() === month) {
+        const day = entryDate.getDate() - 1; // Array is 0-indexed
+        if (day >= 0 && day < labels.length) {
+            balvatikaData[day] = entry.balvatika;
+            primaryData[day] = entry.primary;
+            middleData[day] = entry.middle;
+            totalData[day] = entry.totalStudents;
+        }
+    }
+});
+            
+            return {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Balvatika',
+                            data: balvatikaData,
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            fill: false
+                        },
+                        {
+                            label: 'Primary',
+                            data: primaryData,
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            fill: false
+                        },
+                        {
+                            label: 'Middle',
+                            data: middleData,
+                            backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                            borderColor: 'rgba(255, 206, 86, 1)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            fill: false
+                        },
+                        {
+                            label: 'Total',
+                            data: totalData,
+                            backgroundColor: 'rgba(1, 87, 155, 0.2)',
+                            borderColor: 'rgba(1, 87, 155, 1)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                boxWidth: 12,
+                                font: {
+                                    size: 10
+                                }
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                title: function(context) {
+                                    const day = context[0].label;
+                                    const date = new Date(year, month, day);
+                                    const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+                                    return `${dayName}, ${formatDate(date, true)}`;
+                                },
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.parsed.y} meals`;
+                                }
+                            }
+                        }
+                    }
+                }
+            };
         }
 
         // Highlight Sundays in the chart
         function highlightSundays() {
-            if (!window.attendanceChart) return;
+            if (!window.dashboardChartInstance) return;
             
-            // Get current month and year
-            const now = new Date();
-            const year = now.getFullYear();
-            const month = now.getMonth();
+            // Get selected month and year
+            let year = state.currentYear;
+            let month = state.currentMonth;
+            
+            if (UI.chartMonth.value) {
+                const [selectedYear, selectedMonth] = UI.chartMonth.value.split('-').map(Number);
+                year = selectedYear;
+                month = selectedMonth - 1;
+            }
             
             // Get number of days in month
             const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -2986,12 +3690,12 @@
             }
             
             // Update chart
-            window.attendanceChart.options.scales.x.grid = {
+            window.dashboardChartInstance.options.scales.x.grid = {
                 color: backgroundColors.map(color => color),
                 lineWidth: 1
             };
             
-            window.attendanceChart.update();
+            window.dashboardChartInstance.update();
         }
 
         // Generate summary
@@ -3316,27 +4020,43 @@
             
             // Add title
             doc.setFontSize(16);
-            doc.text(`PM-POSHAN Mid-Day Meal Scheme`, 105, 15, { align: 'center' });
+            doc.text(`PM-POSHAN (Mid-Day Meal Scheme)`, 105, 15, { align: 'center' });
             doc.setFontSize(14);
-            doc.text(`Monthly Data Collection Form (MDCF)`, 105, 22, { align: 'center' });
+            doc.text(`Monthly Data Collection Format (MDCF)`, 105, 22, { align: 'center' });
             
             // Add school details
-            doc.setFontSize(10);
-            doc.text(`School: ${state.settings.schoolName}`, 20, 30);
-            doc.text(`UDISE: ${state.settings.udise}`, 20, 35);
-            doc.text(`Month: ${monthName} ${year}`, 20, 40);
-            
-            // Section 1: School Details
-            doc.setFontSize(12);
-            doc.text('1. School Details', 20, 50);
-            doc.setFontSize(10);
-            doc.text(`School Type: ${state.settings.schoolDetails.schoolType.charAt(0).toUpperCase() + state.settings.schoolDetails.schoolType.slice(1)}`, 25, 55);
-            doc.text(`School Category: ${state.settings.schoolDetails.schoolCategory.charAt(0).toUpperCase() + state.settings.schoolDetails.schoolCategory.slice(1)}`, 25, 60);
-            doc.text(`Kitchen Type: ${state.settings.schoolDetails.kitchenType.charAt(0).toUpperCase() + state.settings.schoolDetails.kitchenType.slice(1)}`, 25, 65);
-            doc.text(`State/UT: ${state.settings.schoolDetails.state}`, 25, 70);
-            doc.text(`District: ${state.settings.schoolDetails.district}`, 25, 75);
-            doc.text(`Block/NP: ${state.settings.schoolDetails.block}`, 25, 80);
-            doc.text(`Village/Ward: ${state.settings.schoolDetails.village}`, 25, 85);
+doc.setFontSize(10);
+ doc.text(`School: ${state.settings.schoolName}`, 20, 40);
+ doc.text(`UDISE: ${state.settings.udise}`, 100, 40);
+ doc.text(`Month: ${monthName} ${year}`, 160, 40);
+
+// Section 1: School Details
+doc.setFontSize(12);
+ doc.text('1. School Details', 20, 55);
+
+const schoolDetails = [
+  ['School Type', state.settings.schoolDetails.schoolType.charAt(0).toUpperCase() + state.settings.schoolDetails.schoolType.slice(1),
+   'School Category', state.settings.schoolDetails.schoolCategory.charAt(0).toUpperCase() + state.settings.schoolDetails.schoolCategory.slice(1)],
+  ['Kitchen Type', state.settings.schoolDetails.kitchenType.charAt(0).toUpperCase() + state.settings.schoolDetails.kitchenType.slice(1),
+   'State/UT', state.settings.schoolDetails.state],
+  ['District', state.settings.schoolDetails.district,
+   'Block/NP', state.settings.schoolDetails.block],
+  ['Village/Ward', state.settings.schoolDetails.village]
+];
+
+ doc.autoTable({
+  startY: 50,
+  body: schoolDetails,
+  theme: 'grid',
+  styles: { fontSize: 9, cellPadding: 3, align: 'center' },
+  headStyles: { fillColor: [41, 128, 185], textColor: 255, fontStyle: 'bold' },
+  columnStyles: {
+    0: { cellWidth: 40 },
+    1: { cellWidth: 50 },
+    2: { cellWidth: 40 },
+    3: { cellWidth: 50 }
+  }
+});
             
             // Section 2: Meals Availed Status
             doc.setFontSize(12);
@@ -3369,7 +4089,7 @@
             // Section 3: Fund Details
             let finalY = doc.lastAutoTable.finalY + 10;
             doc.setFontSize(12);
-            doc.text('3. Fund Details (in ₹.)', 20, finalY);
+            doc.text('3. Fund Details (in Rs.)', 20, finalY);
             doc.setFontSize(10);
             
             const fundTableHeaders = ['Category', 'Opening', 'Received', 'Expenditure', 'Closing'];
@@ -3402,9 +4122,14 @@
             doc.setFontSize(10);
             
             const helperTableHeaders = ['Name', 'Gender', 'Category', 'Payment Mode', 'Amount (Rs.)'];
-            const helperTableData = [
-                ['No helpers added', '', '', '', '']
-            ];
+            const helperTableData = state.helpers.length > 0 ? 
+                state.helpers.map(helper => [
+                    helper.name,
+                    helper.gender.charAt(0).toUpperCase() + helper.gender.slice(1),
+                    helper.category.toUpperCase(),
+                    helper.paymentMode.charAt(0).toUpperCase() + helper.paymentMode.slice(1),
+                    helper.amount.toFixed(2)
+                ]) : [['No helpers added', '', '', '', '']];
             
             doc.autoTable({
                 head: [helperTableHeaders],
@@ -3432,7 +4157,7 @@
                 ['Balvatika (Rice)', grainData.balvatika.opening, grainData.balvatika.received, grainData.balvatika.consumed, grainData.balvatika.closing],
                 ['Primary (Rice)', grainData.primary.opening, grainData.primary.received, grainData.primary.consumed, grainData.primary.closing],
                 ['Middle (Rice)', grainData.middle.opening, grainData.middle.received, grainData.middle.consumed, grainData.middle.closing],
-               
+                
             ];
             
             doc.autoTable({
@@ -3449,15 +4174,6 @@
                     textColor: 255
                 }
             });
-            // Ensure totals are recalculated before PDF export
-
-fundData.total.opening = fundData.balvatika.opening + fundData.primary.opening + fundData.middle.opening;
-fundData.total.received = fundData.balvatika.received + fundData.primary.received + fundData.middle.received;
-fundData.total.expenditure = fundData.balvatika.expenditure + fundData.primary.expenditure + fundData.middle.expenditure;
-
-grainData.total.opening = grainData.balvatika.opening + grainData.primary.opening + grainData.middle.opening;
-grainData.total.received = grainData.balvatika.received + grainData.primary.received + grainData.middle.received;
-grainData.total.consumed = grainData.balvatika.consumed + grainData.primary.consumed + grainData.middle.consumed;
             
             // Section 6: Children Health Status
             finalY = doc.lastAutoTable.finalY + 10;
@@ -3517,11 +4233,11 @@ grainData.total.consumed = grainData.balvatika.consumed + grainData.primary.cons
             
             // Add signature lines
             finalY = doc.lastAutoTable.finalY + 20;
-            doc.text('Signature of Head Teacher', 40, finalY);
-            doc.text('Signature of Cook-cum-Helper', 105, finalY);
+            doc.text('Signature of Sarpanch', 30, finalY);
+            doc.text('Signature of  Headmaster/Principal', 95, finalY);
             
-            doc.line(30, finalY + 4, 70, finalY + 4);
-            doc.line(95, finalY + 4, 135, finalY + 4);
+            doc.line(30, finalY + 4, 67, finalY + 4);
+            doc.line(95, finalY + 4, 150, finalY + 4);
             
             // Update progress
             UI.exportProgressBar.style.width = '100%';
@@ -3816,6 +4532,8 @@ grainData.total.consumed = grainData.balvatika.consumed + grainData.primary.cons
                 entries: state.entries,
                 riceEntries: state.riceEntries,
                 cashEntries: state.cashEntries,
+                helpers: state.helpers,
+                helperPayments: state.helperPayments,
                 settings: state.settings,
                 timestamp: new Date().toISOString()
             };
@@ -3858,6 +4576,8 @@ grainData.total.consumed = grainData.balvatika.consumed + grainData.primary.cons
                         state.entries = backup.entries;
                         state.riceEntries = backup.riceEntries;
                         state.cashEntries = backup.cashEntries;
+                        state.helpers = backup.helpers || [];
+                        state.helperPayments = backup.helperPayments || [];
                         state.settings = backup.settings;
                         
                         // Ensure schoolDetails exists
@@ -3922,9 +4642,11 @@ grainData.total.consumed = grainData.balvatika.consumed + grainData.primary.cons
                 state.entries = [];
                 state.riceEntries = [];
                 state.cashEntries = [];
+                state.helpers = [];
+                state.helperPayments = [];
                 state.settings = {
-                    schoolName: 'School Name',
-                    udise: '00000000000',
+                    schoolName: 'Middle School Senzi',
+                    udise: '01061600204',
                     onRoll: {
                         balvatika: 0,
                         primary: 0,
@@ -3965,11 +4687,11 @@ grainData.total.consumed = grainData.balvatika.consumed + grainData.primary.cons
                         schoolType: 'government',
                         schoolCategory: 'primary',
                         kitchenType: 'local',
-                        state: 'Jammu and Kashmir',
-                        district: 'Anantnag',
-                        block: 'Vailoo',
+                        state: '',
+                        district: '',
+                        block: '',
                         village: '',
-                        ngo: 'NA'
+                        ngo: ''
                     },
                     healthDetails: {
                         ifaBoys: 0,
@@ -3985,6 +4707,8 @@ grainData.total.consumed = grainData.balvatika.consumed + grainData.primary.cons
                 localStorage.removeItem('poshanEntries');
                 localStorage.removeItem('poshanRiceEntries');
                 localStorage.removeItem('poshanCashEntries');
+                localStorage.removeItem('poshanHelpers');
+                localStorage.removeItem('poshanHelperPayments');
                 localStorage.removeItem('poshanSettings');
                 
                 // Clear all balance data
@@ -4048,43 +4772,6 @@ grainData.total.consumed = grainData.balvatika.consumed + grainData.primary.cons
 
         // Initialize app when DOM is loaded
         document.addEventListener('DOMContentLoaded', init);
-        function saveSettings() {
-    // Update state from inputs
-    state.settings.schoolName = UI.settingsSchoolName.value || 'School Name';
-    state.settings.udise = UI.settingsUdise.value || '00000000000';
-    state.settings.onRoll.balvatika = parseInt(UI.settingsBalvatikaRoll.value) || 0;
-    state.settings.onRoll.primary = parseInt(UI.settingsPrimaryRoll.value) || 0;
-    state.settings.onRoll.middle = parseInt(UI.settingsMiddleRoll.value) || 0;
-
-    // School details
-    state.settings.schoolDetails.schoolType = UI.settingsSchoolType.value;
-    state.settings.schoolDetails.schoolCategory = UI.settingsSchoolCategory.value;
-    state.settings.schoolDetails.kitchenType = UI.settingsKitchenType.value;
-    state.settings.schoolDetails.state = UI.settingsState.value;
-    state.settings.schoolDetails.district = UI.settingsDistrict.value;
-    state.settings.schoolDetails.block = UI.settingsBlock.value;
-    state.settings.schoolDetails.village = UI.settingsVillage.value;
-    state.settings.schoolDetails.ngo = UI.settingsNgo.value;
-
-    // Health details
-    state.settings.healthDetails.ifaBoys = parseInt(UI.healthIfaBoys.value) || 0;
-    state.settings.healthDetails.ifaGirls = parseInt(UI.healthIfaGirls.value) || 0;
-    state.settings.healthDetails.screened = parseInt(UI.healthScreened.value) || 0;
-    state.settings.healthDetails.referred = parseInt(UI.healthReferred.value) || 0;
-    state.settings.healthDetails.inspectionDone = UI.healthInspectionDone.checked;
-    state.settings.healthDetails.incidents = parseInt(UI.healthIncidents.value) || 0;
-
-    // Save to localStorage
-    localStorage.setItem('poshanSettings', JSON.stringify(state.settings));
-
-    // Update dashboard immediately
-    updateDashboard();
-    showToast("Settings saved and will stay after refresh.");
-}
-
-// Hook up buttons
-UI.settingsSchoolDetailsSaveBtn.addEventListener('click', saveSettings);
-UI.settingsSaveAllBtn.addEventListener('click', saveSettings);
     </script>
 </body>
 </html>
