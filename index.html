@@ -1,4 +1,4 @@
-<meta name='viewport' content='width=device-width, initial-scale=1'/><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -180,7 +180,7 @@
         .entry-input {
             flex: 1;
             min-width: 80px;
-            margin: 2px;
+            margin: 3px;
         }
 
         .entry-input label {
@@ -217,6 +217,25 @@
             color: white;
         }
 
+        .btn-category-pdf {
+            background: linear-gradient(135deg, #43a047, #2e7d32);
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.7rem;
+            margin: 2px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-category-pdf:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow);
+            color: white;
+        }
+
         .app-footer {
             position: fixed;
             bottom: 0;
@@ -233,7 +252,7 @@
             display: flex;
             justify-content: space-around;
             background: var(--secondary-gradient);
-            border-radius: 8px;
+            border-radius: 10px;
             margin: 10px;
             padding: 3px;
         }
@@ -756,6 +775,12 @@
             background: #f5f5f5;
         }
 
+        .category-pdf-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+        }
+
         @media print {
             body {
                 background: white;
@@ -783,7 +808,7 @@
         <!-- App Header -->
         <div class="app-header">
             <h1>PM-POSHAN Mid-Day Meal</h1>
-            <p>Samghra Shiksha</p>
+            <p>Government of Jammu & Kashmir</p>
         </div>
 
         <!-- Navigation Tabs -->
@@ -818,8 +843,8 @@
                         <i class="bi bi-building"></i>
                     </div>
                     <div class="school-details">
-                        <h2 id="dashboard-school-name">School Name</h2>
-                        <p>UDISE: <span id="dashboard-udise">00000000000</span></p>
+                        <h2 id="dashboard-school-name">School Name Here</h2>
+                        <p>UDISE: <span id="dashboard-udise">UDISE Code Here</span></p>
                     </div>
                 </div>
 
@@ -908,6 +933,19 @@
                 <button class="btn-primary-custom mb-3" id="summary-generate-btn">
                     <i class="bi bi-table"></i> Generate Summary
                 </button>
+
+                <!-- Category PDF Download Buttons -->
+                <div class="category-pdf-buttons">
+                    <button class="btn-category-pdf" id="download-balvatika-pdf">
+                        <i class="bi bi-download"></i> Balvatika PDF
+                    </button>
+                    <button class="btn-category-pdf" id="download-primary-pdf">
+                        <i class="bi bi-download"></i> Primary PDF
+                    </button>
+                    <button class="btn-category-pdf" id="download-middle-pdf">
+                        <i class="bi bi-download"></i> Middle PDF
+                    </button>
+                </div>
 
                 <div class="table-responsive">
                     <table class="table table-striped" id="summary-table">
@@ -1122,7 +1160,7 @@
                 <div class="form-group">
                     <label for="export-month">Select Month</label>
                     <select id="export-month" class="form-control">
-             <option value="">-- Select Month --</option>
+                        <option value="">-- Select Month --</option>
                     </select>
                 </div>
                 
@@ -1556,9 +1594,7 @@
                         <h3>IFA Tablet Beneficiaries</h3>
                         <div class="settings-grid">
                             <div class="form-group">
-                                <label for="health-ifa-boys
-                                
-                                                                <label for="health-ifa-boys">Boys</label>
+                                <label for="health-ifa-boys">Boys</label>
                                 <input type="number" id="health-ifa-boys" min="0" class="form-control">
                             </div>
                             <div class="form-group">
@@ -1746,7 +1782,7 @@
 
         <!-- App Footer -->
         <div class="app-footer">
-            Developed by Imran Gani | Teacher Zone Vailoo | 9149690096
+            Developed by Imran Gani | Teacher Zone Vailoo
         </div>
     </div>
 
@@ -1823,6 +1859,11 @@
             summaryCashMiddle: document.getElementById('summary-cash-middle'),
             summaryCashTotal: document.getElementById('summary-cash-total'),
             summaryCashSaveBtn: document.getElementById('summary-cash-save-btn'),
+            
+            // Summary - Category PDF Downloads
+            downloadBalvatikaPdf: document.getElementById('download-balvatika-pdf'),
+            downloadPrimaryPdf: document.getElementById('download-primary-pdf'),
+            downloadMiddlePdf: document.getElementById('download-middle-pdf'),
             
             // Abstracts
             abstractsMonth: document.getElementById('abstracts-month'),
@@ -1992,8 +2033,8 @@
             helpers: [],
             helperPayments: [],
             settings: {
-                schoolName: 'School Name',
-                udise: '00000000000',
+                schoolName: 'Middle School Senzi',
+                udise: '01061600204',
                 onRoll: {
                     balvatika: 0,
                     primary: 0,
@@ -2271,6 +2312,12 @@
             UI.dashboardSaveBtn.addEventListener('click', saveDashboardEntry);
             UI.summaryRiceSaveBtn.addEventListener('click', saveSummaryRiceEntry);
             UI.summaryCashSaveBtn.addEventListener('click', saveSummaryCashEntry);
+            
+            // Category PDF download buttons
+            UI.downloadBalvatikaPdf.addEventListener('click', () => downloadCategoryPDF('balvatika'));
+            UI.downloadPrimaryPdf.addEventListener('click', () => downloadCategoryPDF('primary'));
+
+UI.downloadMiddlePdf.addEventListener('click', () => downloadCategoryPDF('middle'));
             
             // Settings save buttons
             UI.settingsSchoolDetailsSaveBtn.addEventListener('click', saveSchoolDetails);
@@ -2622,7 +2669,7 @@
             // Save to localStorage
             saveData();
             
-            // Reset form
+             // Reset form
             UI.summaryCashBalvatika.value = '';
             UI.summaryCashPrimary.value = '';
             UI.summaryCashMiddle.value = '';
@@ -3757,8 +3804,10 @@ state.entries.forEach(entry => {
                     <td>${formatDate(new Date(entry.date), true)}</td>
                     <td>${category === 'all' ? state.settings.onRoll.balvatika + state.settings.onRoll.primary + state.settings.onRoll.middle : 
                         category === 'balvatika' ? state.settings.onRoll.balvatika : 
-                        category === 'primary' ? state.settings.onRoll.primary : 
-                        state.settings.onRoll.middle}</td>
+                        category === 'primary' ? state.settings.onRoll.primary :
+                        
+state.settings.onRoll.middle}
+</td>
                     <td>${rowStudents}</td>
                     <td>${rowRice.toFixed(2)}</td>
                     <td>${rowTotal.toFixed(2)}</td>
@@ -3939,6 +3988,323 @@ state.entries.forEach(entry => {
                 cash: cashTotalBalance
             }));
         }
+        
+        // Download category PDF
+function downloadCategoryPDF(category) {
+    const monthYear = UI.summaryMonth.value;
+    
+    if (!monthYear) {
+        showToast('Please select a month first', 'warning');
+        return;
+    }
+    
+    // Parse month and year
+    const [year, month] = monthYear.split('-').map(Number);
+    
+    // Get month name
+    const monthNames = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    const monthName = monthNames[month - 1];
+    
+    // Get entries for selected month
+    const monthEntries = state.entries.filter(entry => {
+        const entryDate = new Date(entry.date);
+        return entryDate.getFullYear() === year && entryDate.getMonth() === month - 1;
+    });
+    
+    if (monthEntries.length === 0) {
+        showToast('No data available for the selected month', 'warning');
+        return;
+    }
+    
+    // Create PDF
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    // Add title
+    doc.setFontSize(16);
+    doc.text(`PM-POSHAN Mid-Day Meal Scheme`, 105, 15, { align: 'center' });
+    doc.setFontSize(14);
+    doc.text(`${category.charAt(0).toUpperCase() + category.slice(1)} Monthly Summary`, 105, 22, { align: 'center' });
+    
+    // Add school details
+    doc.setFontSize(10);
+    doc.text(`School: ${state.settings.schoolName}`, 20, 30);
+    doc.text(`UDISE: ${state.settings.udise}`, 90, 30);
+    doc.text(`Month: ${monthName} ${year}`, 160, 30);
+    
+    // Draw a horizontal line under the title doc.setLineWidth(0.5);
+
+ doc.line(10, 33, 200, 33);
+ 
+    // Add summary table
+    const tableHeaders = ['S.No', 'Date', 'On-Roll', 'Present', 'Rice (kg)', 'Dal & Veg (Rs)', 'Oil & Cond (Rs)', 'Salt (Rs)', 'Fuel (Rs)', 'Total (Rs)'];
+    
+    const tableData = [];
+    let totalStudents = 0;
+    let totalRice = 0;
+    let totalDal = 0;
+    let totalOil = 0;
+    let totalSalt = 0;
+    let totalFuel = 0;
+    let totalExpenditure = 0;
+    
+    monthEntries.forEach((entry, index) => {
+        let rowStudents = 0;
+        let rowRice = 0;
+        let rowDal = 0;
+        let rowOil = 0;
+        let rowSalt = 0;
+        let rowFuel = 0;
+        let rowTotal = 0;
+        
+        // Calculate values based on category
+        if (category === 'balvatika') {
+            rowStudents = entry.balvatika;
+            rowRice = (entry.balvatika * state.settings.rates.rice.balvatika) / 1000;
+            rowDal = entry.balvatika * state.settings.rates.dal.balvatika;
+            rowOil = entry.balvatika * state.settings.rates.oil.balvatika;
+            rowSalt = entry.balvatika * state.settings.rates.salt.balvatika;
+            rowFuel = entry.balvatika * state.settings.rates.fuel.balvatika;
+        } else if (category === 'primary') {
+            rowStudents = entry.primary;
+            rowRice = (entry.primary * state.settings.rates.rice.primary) / 1000;
+            rowDal = entry.primary * state.settings.rates.dal.primary;
+            rowOil = entry.primary * state.settings.rates.oil.primary;
+            rowSalt = entry.primary * state.settings.rates.salt.primary;
+            rowFuel = entry.primary * state.settings.rates.fuel.primary;
+        } else if (category === 'middle') {
+            rowStudents = entry.middle;
+            rowRice = (entry.middle * state.settings.rates.rice.middle) / 1000;
+            rowDal = entry.middle * state.settings.rates.dal.middle;
+            rowOil = entry.middle * state.settings.rates.oil.middle;
+            rowSalt = entry.middle * state.settings.rates.salt.middle;
+            rowFuel = entry.middle * state.settings.rates.fuel.middle;
+        }
+        
+        rowTotal = rowDal + rowOil + rowSalt + rowFuel;
+        
+        totalStudents += rowStudents;
+        totalRice += rowRice;
+        totalDal += rowDal;
+        totalOil += rowOil;
+        totalSalt += rowSalt;
+        totalFuel += rowFuel;
+        totalExpenditure += rowTotal;
+        
+        tableData.push([
+            index + 1,
+            formatDate(new Date(entry.date), true),
+            state.settings.onRoll[category],
+            rowStudents,
+            rowRice.toFixed(2),
+            rowDal.toFixed(2),
+            rowOil.toFixed(2),
+            rowSalt.toFixed(2),
+            rowFuel.toFixed(2),
+            rowTotal.toFixed(2)
+        ]);
+    });
+    
+    // Add total row
+    tableData.push([
+        '',
+        'TOTAL',
+        state.settings.onRoll[category],
+        totalStudents,
+        totalRice.toFixed(2),
+        totalDal.toFixed(2),
+        totalOil.toFixed(2),
+        totalSalt.toFixed(2),
+        totalFuel.toFixed(2),
+        totalExpenditure.toFixed(2)
+    ]);
+    
+    // Add table to PDF
+    doc.autoTable({
+        head: [tableHeaders],
+        body: tableData,
+        startY: 40,
+        theme: 'grid',
+        styles: {
+            fontSize: 8,
+            cellPadding: 2
+        },
+        headStyles: {
+            fillColor: [1, 87, 155],
+            textColor: 255
+        },
+        bodyStyles: {
+            fillColor: [245, 245, 245]
+        },
+        alternateRowStyles: {
+            fillColor: [255, 255, 255]
+        },
+        columnStyles: {
+            0: { cellWidth: 10 },
+            1: { cellWidth: 20 },
+            2: { cellWidth: 15 },
+            3: { cellWidth: 15 },
+            4: { cellWidth: 20 },
+            5: { cellWidth: 20 },
+            6: { cellWidth: 20 },
+            7: { cellWidth: 20 },
+            8: { cellWidth: 20 },
+            9: { cellWidth: 20 },
+            10: { cellWidth: 25 }
+        }
+    });
+    
+    // Add abstract section
+    let finalY = doc.lastAutoTable.finalY + 15;
+    
+    // Get previous month
+    let prevMonth = month - 1;
+    let prevYear = year;
+    if (prevMonth < 1) {
+        prevMonth = 12;
+        prevYear--;
+    }
+    
+    // Get opening balances from previous month
+    let riceOpening = state.settings.balances.rice;
+    let cashOpening = state.settings.balances.cash;
+    
+    const prevMonthKey = `${prevYear}-${String(prevMonth).padStart(2, '0')}`;
+    const savedBalances = localStorage.getItem(`poshanBalances_${prevMonthKey}`);
+    
+    if (savedBalances) {
+        const balances = JSON.parse(savedBalances);
+        riceOpening = balances.rice;
+        cashOpening = balances.cash;
+    }
+    
+    // Get rice entries for selected month
+    const monthRiceEntries = state.riceEntries.filter(entry => {
+        const entryDate = new Date(entry.date);
+        return entryDate.getFullYear() === year && entryDate.getMonth() === month - 1;
+    });
+    
+    // Get cash entries for selected month
+    const monthCashEntries = state.cashEntries.filter(entry => {
+        const entryDate = new Date(entry.date);
+        return entryDate.getFullYear() === year && entryDate.getMonth() === month - 1;
+    });
+    
+    // Calculate category-wise rice abstract
+    let riceReceived = 0;
+    let riceConsumed = 0;
+    
+    monthRiceEntries.forEach(entry => {
+        riceReceived += entry[category];
+    });
+    
+    monthEntries.forEach(entry => {
+        riceConsumed += (entry[category] * state.settings.rates.rice[category]) / 1000;
+    });
+    
+    const riceBalance = riceOpening + riceReceived - riceConsumed;
+    
+    // Calculate category-wise cash abstract
+    let cashReceived = 0;
+    let cashExpenditure = 0;
+    
+    monthCashEntries.forEach(entry => {
+        cashReceived += entry[category];
+    });
+    
+    monthEntries.forEach(entry => {
+        cashExpenditure += entry[category] * (
+            state.settings.rates.dal[category] + 
+            state.settings.rates.oil[category] + 
+            state.settings.rates.salt[category] + 
+            state.settings.rates.fuel[category]
+        );
+    });
+    
+    const cashBalance = cashOpening + cashReceived - cashExpenditure;
+    
+    // Draw a horizontal line under the title doc.setLineWidth(0.5);
+
+ doc.line(10, finalY-8, 200, finalY-8);
+ 
+    // Add abstract tables
+    doc.setFontSize(12);
+ doc.text('Rice Abstract', 20, finalY);
+ doc.setFontSize(12);
+ doc.text('Cash Abstract', 140, finalY);
+
+// Rice abstract data
+const riceAbstractData = [
+  ['Opening', riceOpening.toFixed(2)],
+  ['Received', riceReceived.toFixed(2)],
+  ['Opening + Received', ],
+  ['Consumed', riceConsumed.toFixed(2)],
+  ['Balance', riceBalance.toFixed(2)]
+];
+
+// Cash abstract data
+const cashAbstractData = [
+  ['Opening', cashOpening.toFixed(2)],
+  ['Received', cashReceived.toFixed(2)],
+  ['Opening + Received', ],
+  ['Expenditure', cashExpenditure.toFixed(2)],
+  ['Balance', cashBalance.toFixed(2)]
+];
+
+// Left table (Rice)
+ doc.autoTable({
+  head: [['Items', 'Rice Abstract (kg)']],
+  body: riceAbstractData,
+  startY: finalY + 5,
+  margin: { left: 15 }, // Left side
+  tableWidth: 60,       // Adjust width
+  theme: 'grid',
+  styles: {
+    fontSize: 8,
+    cellPadding: 2
+  },
+  headStyles: {
+    fillColor: [1, 87, 155],
+    textColor: 255
+  }
+});
+
+// Right table (Cash)
+ doc.autoTable({
+  head: [['Items', 'Cash Abstract (Rs)']],
+  body: cashAbstractData,
+  startY: finalY + 5,    // Same Y as first table
+  margin: { left: 135 }, // Push right
+  tableWidth: 60,        // Adjust width
+  theme: 'grid',
+  styles: {
+    fontSize: 8,
+    cellPadding: 2
+  },
+  headStyles: {
+    fillColor: [1, 87, 155],
+    textColor: 255
+  }
+});
+    
+    // Add signature lines
+    finalY = doc.lastAutoTable.finalY + 20;
+    doc.text('Signature of Head Teacher', 40, finalY);
+    doc.text('Signature of Cook-cum-Helper', 105, finalY);
+    
+    doc.line(30, finalY + 4, 70, finalY + 4);
+    doc.line(95, finalY + 4, 135, finalY + 4);
+    
+    // Save PDF
+    const categoryName = category.charAt(0).toUpperCase() + category.slice(1);
+    const filename = `${state.settings.schoolName.replace(/\s+/g, '_')}_${categoryName}_Summary_${monthName}_${year}.pdf`;
+    doc.save(filename);
+    
+    showToast(`${categoryName} summary PDF downloaded successfully`, 'success');
+}
 
         // Generate Official MDCF Report
         function generateOfficialMDCFReport() {
@@ -4025,14 +4391,19 @@ state.entries.forEach(entry => {
             doc.text(`Monthly Data Collection Format (MDCF)`, 105, 22, { align: 'center' });
             
             // Add school details
-doc.setFontSize(10);
- doc.text(`School: ${state.settings.schoolName}`, 20, 40);
- doc.text(`UDISE: ${state.settings.udise}`, 100, 40);
- doc.text(`Month: ${monthName} ${year}`, 160, 40);
-
-// Section 1: School Details
-doc.setFontSize(12);
- doc.text('1. School Details', 20, 55);
+            doc.setFontSize(10);
+            doc.text(`School: ${state.settings.schoolName}`, 20, 30);
+            doc.text(`UDISE: ${state.settings.udise}`, 80, 30);
+            doc.text(`Month: ${monthName} ${year}`, 160, 30);
+            
+            //Guidelines
+            doc.setFontSize(10);
+            doc.text( 'Instructions: Keep following registers at the time of filling the form:-' , 20, 35)
+           doc.text( '1. Enrolment Register. 2. Account 3. Bank Account Pass book. 4. Cooking cost details etc' , 20, 39);
+           
+           // Section 1: School Details
+              doc.setFontSize(12);
+              doc.text('1. School Details', 20, 45);
 
 const schoolDetails = [
   ['School Type', state.settings.schoolDetails.schoolType.charAt(0).toUpperCase() + state.settings.schoolDetails.schoolType.slice(1),
@@ -4051,10 +4422,10 @@ const schoolDetails = [
   styles: { fontSize: 9, cellPadding: 3, align: 'center' },
   headStyles: { fillColor: [41, 128, 185], textColor: 255, fontStyle: 'bold' },
   columnStyles: {
-    0: { cellWidth: 40 },
-    1: { cellWidth: 50 },
-    2: { cellWidth: 40 },
-    3: { cellWidth: 50 }
+    0: { cellWidth: 30 },
+    1: { cellWidth: 60 },
+    2: { cellWidth: 30 },
+    3: { cellWidth: 60 }
   }
 });
             
@@ -4063,13 +4434,28 @@ const schoolDetails = [
             doc.text('2. Meals Availed Status', 20, 95);
             doc.setFontSize(10);
             
-            const mealsTableHeaders = ['Category', 'School Days', 'MDM Days', 'Total Meals'];
-            const mealsTableData = [
-                ['Balvatika', mealsData.balvatika.schoolDays, mealsData.balvatika.served, mealsData.balvatika.total],
-                ['Primary', mealsData.primary.schoolDays, mealsData.primary.served, mealsData.primary.total],
-                ['Middle', mealsData.middle.schoolDays, mealsData.middle.served, mealsData.middle.total],
-                
-            ];
+            const mealsTableHeaders = ['', 'Balvatika', 'Primary', 'Middle'];
+
+const mealsTableData = [
+  [
+    'Number of school days during the month',
+    mealsData.balvatika.schoolDays,
+    mealsData.primary.schoolDays,
+    mealsData.middle.schoolDays
+  ],
+  [
+    'Actual number of days mid day meal served',
+    mealsData.balvatika.served,
+    mealsData.primary.served,
+    mealsData.middle.served
+  ],
+  [
+    'Total meals served during the month',
+    mealsData.balvatika.total,
+    mealsData.primary.total,
+    mealsData.middle.total
+  ]
+];
             
             doc.autoTable({
                 head: [mealsTableHeaders],
@@ -4137,7 +4523,7 @@ const schoolDetails = [
                 startY: finalY + 5,
                 theme: 'grid',
                 styles: {
-                    fontSize: 8,
+                                       fontSize: 8,
                     cellPadding: 2
                 },
                 headStyles: {
@@ -4773,5 +5159,58 @@ const schoolDetails = [
         // Initialize app when DOM is loaded
         document.addEventListener('DOMContentLoaded', init);
     </script>
+    <script>
+ document.addEventListener('DOMContentLoaded', () => {
+  const settings = {
+    balvatikaRoll: 0,  // Change to actual roll numbers
+    primaryRoll: 0,
+    middleRoll: 0
+  };
+
+  const balvatikaInput = document.getElementById('dashboard-balvatika');
+  const primaryInput = document.getElementById('dashboard-primary');
+  const middleInput = document.getElementById('dashboard-middle');
+  const saveBtn = document.getElementById('dashboard-save-btn');
+
+  if (!balvatikaInput || !primaryInput || !middleInput || !saveBtn) {
+    console.error("Attendance form elements not found. Check IDs.");
+    return;
+  }
+
+  // Prefill yesterday's saved values
+  const savedData = JSON.parse(localStorage.getItem('attendanceData')) || {};
+  balvatikaInput.value = savedData.balvatika ?? '';
+  primaryInput.value = savedData.primary ?? '';
+  middleInput.value = savedData.middle ?? '';
+
+  // Handle Save
+  saveBtn.addEventListener('click', () => {
+    const balvatika = Number(balvatikaInput.value) || 0;
+    const primary = Number(primaryInput.value) || 0;
+    const middle = Number(middleInput.value) || 0;
+
+    let errors = [];
+
+    if (settings.balvatikaRoll > 0 && (balvatika < 0 || balvatika > settings.balvatikaRoll)) {
+      errors.push(`Balvatika attendance must be between 0 and ${settings.balvatikaRoll}.`);
+    }
+    if (settings.primaryRoll > 0 && (primary < 0 || primary > settings.primaryRoll)) {
+      errors.push(`Primary attendance must be between 0 and ${settings.primaryRoll}.`);
+    }
+    if (settings.middleRoll > 0 && (middle < 0 || middle > settings.middleRoll)) {
+      errors.push(`Middle attendance must be between 0 and ${settings.middleRoll}.`);
+    }
+
+    if (errors.length > 0) {
+      alert(errors.join("\n"));
+      return;
+    }
+
+    const todayData = { balvatika, primary, middle };
+    localStorage.setItem('attendanceData', JSON.stringify(todayData));
+    alert("Attendance saved successfully!");
+  });
+});
+</script>
 </body>
 </html>
